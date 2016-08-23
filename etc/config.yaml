@@ -47,6 +47,7 @@ internal_products:
   sqlalchemy:
   requests:
   astropy:
+  cmake:
 
 #
 # EUPS products we should ignore alltogether
