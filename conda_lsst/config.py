@@ -264,6 +264,7 @@ class Config(object):
 		config['dependencies'] = _deps
 
 		# Set member variables
+                self.root_dir = root_dir
 		self.output_dir = expand_path(root_dir, config['output_dir'])
 		self.recipe_db_dir = expand_path(root_dir, config['recipe_db_dir'])
 		self.additional_recipes_dir = expand_path(root_dir, config['additional_recipes_dir'])
@@ -280,6 +281,7 @@ class Config(object):
 		# obtaining the source
 		self.git_upstreams = config['git-upstreams']
 		self.override_gitrev = config['override_gitrev']
+                self.prefer_etc_recipes = config['prefer_etc_recipes']
 
 		# Upload support
 		self.channel_server       = config['upload']['server']

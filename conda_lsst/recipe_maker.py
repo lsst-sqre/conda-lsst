@@ -3,6 +3,7 @@ from collections import OrderedDict, namedtuple
 from version_maker import eups_to_conda_version
 from utils import fill_out_template, create_yaml_list
 import json
+import yaml
 
 ProductInfo = namedtuple('ProductInfo', ['conda_name', 'version', 'build_string', 'buildnum', 'product', 'eups_version', 'is_built', 'is_ours'])
 
@@ -44,6 +45,27 @@ class RecipeMaker(object):
 		patches = '  patches:' + create_yaml_list(patchlist)
 		return patches
 
+        def etc_recipe_match(self, conda_name, sha, conda_version):
+                """
+                Given the conda_name, sha and conda_version return True
+                if a matching Conda recipe exists in etc/recipes otherwise
+                return False.
+                """
+                def _check_version(meta):
+                        if meta.get("package") and meta["package"].get("version"):
+                                return meta["package"]["version"] == conda_version
+                def _check_sha(meta):
+                        if meta.get("source") and meta["source"].get("git_rev"):
+                                return meta["source"]["git_rev"] == sha
+                meta_path = os.path.join(self.config.additional_recipes_dir,
+                                         conda_name,
+                                         "meta.yaml")
+                if os.path.isfile(meta_path):
+                        with open(meta_path) as m:
+                                meta = yaml.load(m)
+                        return _check_sha(meta) and _check_version(meta)
+                return False
+        
 	def gen_conda_package(self, product, sha, eups_version, giturl, eups_deps):
 		# What do we call this product in conda?
 		conda_name = self.config.conda_name_for(product)
@@ -61,7 +83,7 @@ class RecipeMaker(object):
 		# process dependencies
 		#
 		eups_deps = set(eups_deps)
-		eups_deps -= self.config.skip_products					# skip unwanted dependencies
+		eups_deps -= self.config.skip_products # skip unwanted dependencies
 
 		# Now start tracking runtime vs build depencendies separately
 		# FIXME: We should do this from the start, but EUPS still isn't tracking the two separately
@@ -91,70 +113,83 @@ class RecipeMaker(object):
 			bdeps.append(internals['build'])
 			rdeps.append(internals['run'])
 
-		bplus, rplus = self.add_missing_deps(conda_name)	# manually add any missing dependencies
-		bdeps += bplus; rdeps += rplus;
-
-		bdeps, rdeps = sorted(bdeps), sorted(rdeps)	# sort, so the ordering is predicatble in meta.yaml
+		bplus, rplus = self.add_missing_deps(conda_name)  # manually add any missing dependencies
+		bdeps += bplus
+                rdeps += rplus
+		bdeps, rdeps = sorted(bdeps), sorted(rdeps)  # sort, so the ordering is predicatble in meta.yaml
 
 		#
 		# Create the Conda packaging spec files
 		#
-		dir = os.path.join(self.config.output_dir, conda_name)
-		os.makedirs(dir)
+                if self.config.prefer_etc_recipes \
+                   and self.etc_recipe_match(conda_name, sha, version):
+                        src_dir = os.path.join(self.config.root_dir,
+                                               self.config.additional_recipes_dir,
+                                               conda_name)
+                        dest_dir = os.path.join(self.config.output_dir, conda_name)
+                        src_dir
+                        if not os.path.isdir(dest_dir):
+                                shutil.copytree(src_dir, dest_dir)
+                        dir_ = os.path.join(self.config.output_dir, conda_name)
+                        buildnum, build_string, is_built = self.get_build_info(conda_name.lower(), version, dir_, build_string_prefix)
+                else:
+		        dir_ = os.path.join(self.config.output_dir, conda_name)
+		        os.makedirs(dir_)
 
-		# Copy any patches into the recipe dir
-		patches = self.prepare_patches(product, dir)
+                        # Copy any patches into the recipe dir
+                        patches = self.prepare_patches(product, dir_)
 
-		# build.sh (TBD: use exact eups versions, instead of -r .)
-		setups = []
-		SEP = 'setup '
-		setups = SEP + ('\n'+SEP).join(setups) if setups else ''
+                        # build.sh (TBD: use exact eups versions, instead of -r .)
+                        setups = []
+                        SEP = 'setup '
+                        setups = SEP + ('\n'+SEP).join(setups) if setups else ''
+                        
+                        template_dir = self.config.template_dir
+                 
+                        build_template = 'build.sh.template' if product not in self.config.internal_products else 'build-internal.sh.template'
+                        fill_out_template(os.path.join(dir_, 'build.sh'),
+                                          os.path.join(template_dir, build_template),
+                                          setups = setups,
+                                          eups_version = eups_version,
+                                          eups_tags = ' '.join(self.config.global_eups_tags))
 
-		template_dir = self.config.template_dir
+                        # pre-link.sh (to add the global tags)
+                        fill_out_template(os.path.join(dir_, 'pre-link.sh'),
+                                          os.path.join(template_dir, 'pre-link.sh.template'),
+                                          product = product,)
 
-		build_template = 'build.sh.template' if product not in self.config.internal_products else 'build-internal.sh.template'
-		fill_out_template(os.path.join(dir, 'build.sh'), os.path.join(template_dir, build_template),
-			setups = setups,
-			eups_version = eups_version,
-			eups_tags = ' '.join(self.config.global_eups_tags)
-		)
+                        # meta.yaml
+                        rdeps = [ self.conda_version_spec(p) if p in self.products else p for p in rdeps ]
+                        bdeps = [ self.conda_version_spec(p) if p in self.products else p for p in bdeps ]
+                        reqstr_r = create_yaml_list(rdeps)
+                        reqstr_b = create_yaml_list(bdeps)
+                 
+                        meta_yaml = os.path.join(dir_, 'meta.yaml')
+                        fill_out_template(meta_yaml, os.path.join(template_dir, 'meta.yaml.template'),
+                                          productNameLowercase = conda_name.lower(),
+                                          version = version,
+                                          gitrev = sha,
+                                          giturl = giturl,
+                                          build_req = reqstr_b,
+                                          run_req = reqstr_r,
+                                          patches = patches,)
 
-		# pre-link.sh (to add the global tags)
-		fill_out_template(os.path.join(dir, 'pre-link.sh'), os.path.join(template_dir, 'pre-link.sh.template'),
-			product = product,
-		)
+                        # The recipe is now (almost) complete.
+                        # Find our build number. If this package already exists in the release DB,
+                        # re-use the build number and mark it as '.done' so it doesn't get rebuilt.
+                        # Otherwise, increment the max build number by one and use that.
+                        buildnum, build_string, is_built = self.get_build_info(conda_name.lower(), version, dir_, build_string_prefix)
 
-		# meta.yaml
-		rdeps = [ self.conda_version_spec(p) if p in self.products else p for p in rdeps ]
-		bdeps = [ self.conda_version_spec(p) if p in self.products else p for p in bdeps ]
-		reqstr_r = create_yaml_list(rdeps)
-		reqstr_b = create_yaml_list(bdeps)
-
-		meta_yaml = os.path.join(dir, 'meta.yaml')
-		fill_out_template(meta_yaml, os.path.join(template_dir, 'meta.yaml.template'),
-			productNameLowercase = conda_name.lower(),
-			version = version,
-			gitrev = sha,
-			giturl = giturl,
-			build_req = reqstr_b,
-			run_req = reqstr_r,
-			patches = patches,
-		)
-
-		# The recipe is now (almost) complete.
-		# Find our build number. If this package already exists in the release DB,
-		# re-use the build number and mark it as '.done' so it doesn't get rebuilt.
-		# Otherwise, increment the max build number by one and use that.
-		buildnum, build_string, is_built = self.get_build_info(conda_name.lower(), version, dir, build_string_prefix)
-
-		# Fill in the build number and string
-		fill_out_template(meta_yaml, meta_yaml,
-			buildnum = buildnum,
-			build_string = build_string
-		)
+                        # Fill in the build number and string
+                        fill_out_template(meta_yaml, meta_yaml,
+                                          buildnum = buildnum,
+                                          build_string = build_string)
 
 		# record we've seen this product
-		self.products[conda_name] = ProductInfo(conda_name, version, build_string, buildnum, product, eups_version, is_built, True)
+		self.products[conda_name] = ProductInfo(
+                        conda_name, version, build_string,
+                        buildnum, product, eups_version, is_built, True)
+
 
 	def get_build_info(self, conda_name, version, recipe_dir, build_string_prefix):
 		is_built = False
@@ -247,15 +282,15 @@ class RecipeMaker(object):
 		_copy_recipe(name)
 
 	def add_missing_deps(self, conda_name):
-		# inject missing dependencies, creating new conda packages if needed
+                # inject missing dependencies, creating new conda packages if needed
 		# returns Conda package names
-
+                
 		deps_ = { 'build': [], 'run': [] }
 		for typ, deps in deps_.items():
 			for (kind, dep, verSpec, selector, pkgSpec) in self.config.get_missing_deps(conda_name, typ):
-				#print '----', conda_name, ':', typ, kind, dep, verSpec, selector, pkgSpec
-				{
-					'recipe': self.copy_additional_recipe,
+				# print '----', conda_name, ':', typ, kind, dep, verSpec, selector, pkgSpec
+                                {
+                                        'recipe': self.copy_additional_recipe,
 				}.get(kind, lambda dep: None)(dep)
 				deps.append(pkgSpec)
 
@@ -274,7 +309,6 @@ class RecipeMaker(object):
 
 			# Where is the source?
 			giturl = self.config.get_giturl(product)
-
 			self.gen_conda_package(product, sha, version, giturl, deps)
 		print "done."
 

@@ -63,6 +63,12 @@ skip_products:
 lsst_prefix: "lsst-"
 
 #
+# Use Conda recipes found in etc/recipes first before using remote
+# git repositories.
+#
+prefer_etc_recipes: yes
+
+#
 # Explicit overrides for mapping of EUPS->conda product names
 #
 eups_to_conda_map:
