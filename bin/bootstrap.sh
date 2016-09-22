@@ -39,6 +39,11 @@ if [[ ! -f "$PWD/miniconda/.installed" ]]; then
 	#
 	export PATH="$PWD/miniconda/bin:$PATH"
 	conda install conda-build==1.20.0 jinja2 requests sqlalchemy pip --yes
+	# Install python future specifically from conda-forge.
+	# See: https://github.com/ContinuumIO/anaconda-issues/issues/478
+	conda install -c conda-forge future --yes
+	# This switches conda and conda-env. Switch back.
+	conda install conda --yes
 
 	#
 	# Conda build and install SWIG 3.0.10
