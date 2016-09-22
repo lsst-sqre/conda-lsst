@@ -4,7 +4,7 @@ package:
 
 source:
   fn: swig-3.0.10.tar.gz   [unix]
-  url: http://prdownloads.sourceforge.net/swig/swig-3.0.10.tar.gz  [unix]
+  url: http://downloads.sourceforge.net/project/swig/swig/swig-3.0.10/swig-3.0.10.tar.gz [unix]
   sha1: c672b8535394cfb204c70de7c66e69fb20a95647 [unix]
 
 build:
