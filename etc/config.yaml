@@ -48,6 +48,8 @@ internal_products:
   requests:
   astropy:
   cmake:
+  future:
+  pandas:
 
 #
 # EUPS products we should ignore alltogether
@@ -98,6 +100,9 @@ dependencies:
   sims_catalogs_generation:
     run:   [ sqlalchemy ]
     build: [ sqlalchemy ]
+  sims-catutils:
+    run:   [ pandas ]
+    build: [ pandas ]
   sims_skybrightness:
     run:   [ sqlalchemy ]
     build: [ sqlalchemy ]
@@ -163,9 +168,12 @@ dependencies:
 # conda packages used as dependencies.
 #
 pin_versions:
+  astropy:
+    build: "1.1.2"
+    run: "1.1.2"
   numpy:
-    build: "==1.9"
-    run:   ">=1.9"
+    build: "1.10.4"
+    run:   "1.10.4"
   python:
     build: "2.7.*"
     run:   "2.7.*"
