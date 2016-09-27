@@ -50,6 +50,8 @@ internal_products:
   cmake:
   future:
   pandas:
+  cython:
+  mpi4py:
 
 #
 # EUPS products we should ignore alltogether
@@ -150,6 +152,12 @@ dependencies:
   oorb:
     build: [ "gcc ==4.8.5" ]
     run:   [ "libgcc >=4.8.5" ]
+  ctrl_pool:
+    build: [ "mpi4py" ]
+    run:   [ "mpi4py" ]
+  mpi4py:
+    build: [ "cython" ]
+    run:   [ "cython" ]
   "*":
     run:
       - "nomkl                         # [not osx]"
@@ -183,6 +191,9 @@ pin_versions:
   scipy:
     build: "0.16.*"
     run:   ">=0.16"
+  mpi4py:
+    build: "2.0.0"
+    run:   "2.0.0"
 
 #
 # which packages to build on which OS. The effect of this will be to add
