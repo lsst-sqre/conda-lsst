@@ -1,0 +1,36 @@
+#
+# Run `conda build .` to build this package
+#
+
+package:
+  name: "lsst-fftw"
+  version: "3.3.4.2"
+
+source:
+  git_rev: "30c2cc419e7200314efbef8d0c432ac11e9d41be"
+  git_url: "https://github.com/LSST/fftw"
+  patches:
+        - 000_use_gcc_std_gnu89.patch
+
+
+build:
+  number: 0
+  string: "0"
+#  binary_relocation: false
+
+requirements:
+  build:
+    - eups >=2.0.2
+    - gcc ==4.8.5                   # [not osx]
+    - nomkl                         #
+    - patchelf ==0.8                # [not osx]
+
+  run:
+    - eups >=2.0.2
+    - libgcc >=4.8.5                # [not osx]
+    - nomkl                         #
+
+about:
+  home: "https://github.com/LSST/fftw"
+#  license: GPLv2
+#  summary: A version manager tracking product dependencies
