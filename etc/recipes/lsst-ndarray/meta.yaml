@@ -20,7 +20,6 @@ build:
 requirements:
   build:
     - eups >=2.0.2
-    - gcc ==4.8.5                   # [not osx]
     - lsst-boost ==1.60.1
     - lsst-eigen ==3.2.5.2
     - lsst-fftw ==3.3.4.2
@@ -29,7 +28,6 @@ requirements:
     - lsst-swig-eups-configs ==3.0.10
     - nomkl                         #
     - numpy 1.10.4
-    - patchelf ==0.8                # [not osx]
     - python 2.7.*
     - swig ==3.0.10
 
