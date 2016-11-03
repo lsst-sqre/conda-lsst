@@ -104,8 +104,8 @@ dependencies:
     run:   [ sqlalchemy ]
     build: [ sqlalchemy ]
   sims-catutils:
-    run:   [ pandas ]
-    build: [ pandas ]
+    run:   [ pandas, sqlalchemy ]
+    build: [ pandas, sqlalchemy ]
   sims_skybrightness:
     run:   [ sqlalchemy ]
     build: [ sqlalchemy ]
