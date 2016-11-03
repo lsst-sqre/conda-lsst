@@ -190,6 +190,9 @@ pin_versions:
   mpi4py:
     build: "2.0.0"
     run:   "2.0.0"
+  sqlalchemy:
+    build: "1.0.*"
+    run: "1.0.*"
 
 #
 # which packages to build on which OS. The effect of this will be to add
