@@ -30,6 +30,7 @@ requirements:
   build:
     - python
     - setuptools
+    - pip ==8.1.2
 
   run:
     - python

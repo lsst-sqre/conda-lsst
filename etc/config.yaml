@@ -47,6 +47,7 @@ internal_products:
   sqlalchemy:
   requests:
   astropy:
+  pip:
 
 #
 # EUPS products we should ignore alltogether
@@ -148,6 +149,7 @@ dependencies:
       - recipe/eups >=2.0.2
       - "gcc ==4.8.5                   # [not osx]"
       - "patchelf ==0.8                # [not osx]"
+      - pip
 
 #
 # Pin a specific version of a package. This will be applied to all
@@ -168,7 +170,9 @@ pin_versions:
   scipy:
     build: "0.16.*"
     run:   ">=0.16"
-
+  pip:
+    build: "==8.1.2"
+    run: ">=8.1.2"
 #
 # which packages to build on which OS. The effect of this will be to add
 # if statements to rebuild.sh which will skip the builds for packages not

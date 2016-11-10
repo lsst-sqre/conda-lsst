@@ -38,7 +38,7 @@ if [[ ! -f "$PWD/miniconda/.installed" ]]; then
 	# Install prerequisites
 	#
 	export PATH="$PWD/miniconda/bin:$PATH"
-	conda install conda-build==1.20.0 jinja2 requests sqlalchemy pip --yes
+	conda install conda-build==1.20.0 jinja2 requests sqlalchemy pip==8.1.2 --yes
 
 	#
 	# Conda build and install SWIG 3.0.10
@@ -50,6 +50,8 @@ if [[ ! -f "$PWD/miniconda/.installed" ]]; then
 	   conda install swig==3.0.2 --yes
 	   sed -i "" "s/==3\.0\.10/==3\.0\.2/g" ./etc/config.yaml
 	fi
+
+	conda install conda-build==1.20.0 --yes
 
 	#
 	# Pip install requests_file
