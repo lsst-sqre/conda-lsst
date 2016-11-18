@@ -1,12 +1,11 @@
 diff --git ups/eupspkg.cfg.sh ups/eupspkg.cfg.sh
-index e0d1868..8c848a1 100644
+index e0d1868..792b878 100644
 --- ups/eupspkg.cfg.sh
 +++ ups/eupspkg.cfg.sh
-@@ -38,5 +38,14 @@ config()
+@@ -38,5 +38,13 @@ config()
  
      ARGS+=('-DWITHOUT_SERVER=ON')
  
-+    LD_LIBRARY_PATH_=${LD_LIBRARY_PATH}
 +    unset LD_LIBRARY_PATH
 +
      cmake . "${ARGS[@]}"

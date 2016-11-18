@@ -1,0 +1,17 @@
+diff --git ups/eupspkg.cfg.sh ups/eupspkg.cfg.sh
+index 6ce21fb..6d96697 100644
+--- ups/eupspkg.cfg.sh
++++ ups/eupspkg.cfg.sh
+@@ -36,5 +36,12 @@ config()
+             ;;
+     esac
+ 
++    unset LD_LIBRARY_PATH
+     cmake . "${ARGS[@]}"
+ }
++
++build()
++{
++    unset LD_LIBRARY_PATH
++    make
++}
