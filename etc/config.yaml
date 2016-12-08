@@ -4,10 +4,13 @@
 # These will be examined in order, and the first match will be used
 #
 git-upstreams:
-  'https://github.com/EUPSForge/%(product)s':
+  - 'https://github.com/EUPSForge/%(product)s':
     - gcc
-  'https://github.com/LSST/%(product)s':
+  - 'https://github.com/lsst-sims/%(product)s':
+    - "sims_alertsim"
+  - 'https://github.com/lsst/%(product)s':
     - "*"
+
 
 #
 # Any SHA1 overrides to be applied to the build manifest
