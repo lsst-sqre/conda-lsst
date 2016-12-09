@@ -16,8 +16,7 @@ git-upstreams:
 # Any SHA1 overrides to be applied to the build manifest
 # This is a list of mapping of 'product_name' -> 'SHA1-or-ref'
 #
-override_gitrev: {'mariadbclient': '73b49da5098fb9e3aec157f1df0d3c1748ceea5e',
-                  'mariadb': '65eddaa0fadeab3274af9b3e3769e76ab2854c7b'}
+override_gitrev: {}
 
 #
 # Directory with patches
